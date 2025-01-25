@@ -2,6 +2,7 @@ package network.shrimpia.essentials
 
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import network.shrimpia.essentials.hooks.HookBase
+import network.shrimpia.essentials.modules.GreetingModule
 import network.shrimpia.essentials.modules.ModuleBase
 import network.shrimpia.essentials.modules.ShrimpiaAuthModule
 import network.shrimpia.essentials.modules.TeleportModule
@@ -26,6 +27,7 @@ class ShrimpiaEssentials : JavaPlugin() {
         registerModuleAll(
             ShrimpiaAuthModule(),
             TeleportModule(),
+            GreetingModule(),
         )
 
         // コマンド登録
