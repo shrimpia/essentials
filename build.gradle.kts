@@ -19,7 +19,7 @@ repositories {
 dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-    implementation("com.squareup.okhttp3:okhttp:4.3.1")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
 
 val targetJavaVersion = 21
@@ -29,6 +29,11 @@ kotlin {
 
 tasks.build {
     dependsOn("shadowJar")
+}
+
+tasks.shadowJar {
+    archiveClassifier.set("") // 出力ファイル名から "all" を削除
+    mergeServiceFiles() // Serviceファイルを統合
 }
 
 tasks.processResources {

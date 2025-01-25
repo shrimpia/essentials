@@ -1,6 +1,5 @@
 package network.shrimpia.essentials
 
-import network.shrimpia.essentials.modules.CommandTestModule
 import network.shrimpia.essentials.modules.ModuleBase
 import network.shrimpia.essentials.modules.ShrimpiaAuthModule
 import org.bukkit.plugin.java.JavaPlugin
@@ -12,7 +11,6 @@ class ShrimpiaEssentials : JavaPlugin() {
         saveDefaultConfig()
         instance = this
         registerModuleAll(
-            CommandTestModule(),
             ShrimpiaAuthModule(),
         )
     }

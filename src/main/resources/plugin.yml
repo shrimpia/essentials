@@ -2,3 +2,7 @@ name: shrimpiaEssentials
 version: '1.0-SNAPSHOT'
 main: network.shrimpia.essentials.ShrimpiaEssentials
 api-version: '1.21'
+permissions:
+  shrimpiaEssentials.adminCommands:
+    description: Allows access to all admin commands
+    default: op
