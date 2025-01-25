@@ -1,18 +1,33 @@
 package network.shrimpia.essentials
 
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
+import network.shrimpia.essentials.hooks.HookBase
 import network.shrimpia.essentials.modules.ModuleBase
 import network.shrimpia.essentials.modules.ShrimpiaAuthModule
+import network.shrimpia.essentials.modules.TeleportModule
 import org.bukkit.plugin.java.JavaPlugin
 
 class ShrimpiaEssentials : JavaPlugin() {
     private val modules = mutableListOf<ModuleBase>()
 
+    @Suppress("UnstableApiUsage")
     override fun onEnable() {
         saveDefaultConfig()
         instance = this
         registerModuleAll(
             ShrimpiaAuthModule(),
+            TeleportModule(),
         )
+
+        // コマンド登録
+        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { commands ->
+            modules.forEach {
+                it.onRegisterCommand(commands)
+            }
+            hooks.forEach {
+                it.onRegisterCommand(commands)
+            }
+        }
     }
 
     override fun onDisable() {
