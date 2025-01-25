@@ -5,6 +5,7 @@ import network.shrimpia.essentials.hooks.HookBase
 import network.shrimpia.essentials.modules.ModuleBase
 import network.shrimpia.essentials.modules.ShrimpiaAuthModule
 import network.shrimpia.essentials.modules.TeleportModule
+import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 
 class ShrimpiaEssentials : JavaPlugin() {
@@ -57,12 +58,9 @@ class ShrimpiaEssentials : JavaPlugin() {
         modules.add(module)
         logger.info("Registering module: ${module.javaClass.simpleName}")
         module.onEnable()
-    }
-
-    fun unregisterModule(module: ModuleBase) {
-        modules.remove(module)
-        logger.info("Unregistering module: ${module.javaClass.simpleName}")
-        module.onDisable()
+        if (module is Listener) {
+            server.pluginManager.registerEvents(module, this)
+        }
     }
 
     fun registerHookAll(vararg hooks: HookBase) {

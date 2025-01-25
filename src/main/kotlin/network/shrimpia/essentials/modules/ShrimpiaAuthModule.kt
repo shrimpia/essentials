@@ -21,9 +21,6 @@ class ShrimpiaAuthModule : ModuleBase(), Listener {
 
     override fun onEnable() {
         onReloadConfig()
-
-        // このモジュールを、Bukkit イベントリスナーとして登録
-        Bukkit.getServer().pluginManager.registerEvents(this, plugin)
     }
 
     override fun onReloadConfig() {
