@@ -9,11 +9,19 @@ import org.bukkit.plugin.java.JavaPlugin
 
 class ShrimpiaEssentials : JavaPlugin() {
     private val modules = mutableListOf<ModuleBase>()
+    private val hooks = mutableListOf<HookBase>()
 
     @Suppress("UnstableApiUsage")
     override fun onEnable() {
         saveDefaultConfig()
         instance = this
+
+        // フック登録
+        registerHookAll(
+        )
+
+
+        // モジュール登録
         registerModuleAll(
             ShrimpiaAuthModule(),
             TeleportModule(),
@@ -33,6 +41,7 @@ class ShrimpiaEssentials : JavaPlugin() {
     override fun onDisable() {
         instance = null
         modules.forEach { it.onDisable() }
+        hooks.forEach { it.onDisable() }
     }
 
     override fun reloadConfig() {
@@ -54,6 +63,23 @@ class ShrimpiaEssentials : JavaPlugin() {
         modules.remove(module)
         logger.info("Unregistering module: ${module.javaClass.simpleName}")
         module.onDisable()
+    }
+
+    fun registerHookAll(vararg hooks: HookBase) {
+        hooks.forEach { registerHook(it) }
+    }
+
+    fun registerHook(hook: HookBase) {
+        val plugin = server.pluginManager.getPlugin(hook.pluginName) ?: return
+
+        logger.info("プラグイン ${hook.pluginName} が見つかりました。フックを ${hook.javaClass.simpleName} として登録します。")
+        hook.onEnable(plugin)
+        hooks.add(hook)
+    }
+
+    fun unregisterHook(hook: HookBase) {
+        hooks.remove(hook)
+        hook.onDisable()
     }
 
     companion object {
