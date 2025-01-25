@@ -9,6 +9,7 @@ class ShrimpiaEssentials : JavaPlugin() {
     private val modules = mutableListOf<ModuleBase>()
 
     override fun onEnable() {
+        saveDefaultConfig()
         instance = this
         registerModuleAll(
             CommandTestModule(),
@@ -19,6 +20,11 @@ class ShrimpiaEssentials : JavaPlugin() {
     override fun onDisable() {
         instance = null
         modules.forEach { it.onDisable() }
+    }
+
+    override fun reloadConfig() {
+        super.reloadConfig()
+        modules.forEach { it.onReloadConfig() }
     }
 
     fun registerModuleAll(vararg modules: ModuleBase) {

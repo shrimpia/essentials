@@ -20,15 +20,18 @@ class ShrimpiaAuthModule : ModuleBase(), Listener {
     private lateinit var apiUrl: String
 
     override fun onEnable() {
-        // コンフィグからAPIキーとAPIのURLを取得
-        val config = plugin.config
-        apiKey = config.getString("api-key") ?: throw IllegalStateException("api-key is not set at config.yml")
-        apiUrl = config.getString("api-url") ?: throw IllegalStateException("api-url is not set at config.yml")
+        onReloadConfig()
 
         // このモジュールを、Bukkit イベントリスナーとして登録
         Bukkit.getServer().pluginManager.registerEvents(this, plugin)
     }
 
+    override fun onReloadConfig() {
+        // コンフィグからAPIキーとAPIのURLを取得
+        val config = plugin.config
+        apiKey = config.getString("portal_api_key") ?: throw IllegalStateException("portal_api_key is not set at config.yml")
+        apiUrl = config.getString("portal_api_url") ?: throw IllegalStateException("portal_api_url is not set at config.yml")
+    }
     @EventHandler
     /**
      * プレイヤーの参加時に呼び出される
