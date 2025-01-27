@@ -21,16 +21,33 @@ class TeleportModule : ModuleBase(), Listener {
 
     @Suppress("UnstableApiUsage")
     override fun onRegisterCommand(commands: ReloadableRegistrarEvent<Commands>) {
+        // リスポーン地点にテレポートする
+        val spawnCommand =
+            Commands.literal("spawn")
+                .requires { it.sender is Player }
+                .executes {
+                    val player = it.source.sender as Player
+                    teleportAsync(player, player.world.spawnLocation, 5 * 20)
+                    1
+                }
+                .build()
+
         val gotoCommand = Commands.literal("goto")
+            .then(spawnCommand)
             .then(
-                // リスポーン地点にテレポートする
-                Commands.literal("spawn")
+                // ベッドにテレポートする
+                Commands.literal("bed")
                     .requires { it.sender is Player }
                     .executes {
                         val player = it.source.sender as Player
-                        teleportAsync(player, player.world.spawnLocation, 5 * 20)
+                        val bedLocation = player.respawnLocation
+                        if (bedLocation == null) {
+                            player.sendMessage(Component.text("ベッドあるいはリスポーンアンカーが設定されていません"))
+                            return@executes 1
+                        }
+                        teleportAsync(player, bedLocation, 5 * 20)
                         1
-                    }
+                    },
             )
             .then(
                 // メインワールドにテレポートする
@@ -66,6 +83,7 @@ class TeleportModule : ModuleBase(), Listener {
             ).build()
 
         commands.registrar().register(gotoCommand)
+        commands.registrar().register(spawnCommand)
     }
 
     /**
