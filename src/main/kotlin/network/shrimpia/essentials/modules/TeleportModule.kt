@@ -92,7 +92,7 @@ class TeleportModule : ModuleBase(), Listener {
                         val player = it.source.sender as Player
                         val home = HomeUtility.getHome(player, "default")
                         if (home == null) {
-                            player.sendMessage("<red>ホームが設定されていません！<yellow>/home <red>で、現在地をホームに設定し、いつでもここにテレポートできます。".asMiniMessage())
+                            player.sendMessage("<red>ホームが設定されていません！<yellow>\n/home <red>で、現在地をホームに設定し、いつでもここにテレポートできます。".asMiniMessage())
                             return@executes 1
                         }
                         teleportAsync(player, home, 5 * 20)
@@ -117,8 +117,12 @@ class TeleportModule : ModuleBase(), Listener {
             return
         }
         player.sendMessage(Component.text("${delayInTick / 20}秒後に移動します…"))
+
+        // 移動中に他の移動コマンドを実行できないようにする
         val id = player.uniqueId.toString()
         movingPlayerIdSet.add(id)
+
+        //指定したtick数後にプレイヤーを移動させる
         Bukkit.getScheduler().runTaskLater(plugin, Runnable {
             movingPlayerIdSet.remove(id)
             player.teleportAsync(location)
