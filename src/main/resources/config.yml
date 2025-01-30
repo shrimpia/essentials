@@ -1,2 +1,4 @@
 portal_api_url: "https://localhost:8787"
 portal_api_key: "hogehoge"
+misskey_token: ""
+misskey_channel_id: ""

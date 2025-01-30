@@ -1,8 +1,11 @@
 package network.shrimpia.essentials
 
+import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import network.shrimpia.essentials.hooks.HookBase
 import network.shrimpia.essentials.modules.*
+import network.shrimpia.essentials.util.AdventureExtension.asMiniMessage
+import network.shrimpia.essentials.util.LanguageManager
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -14,6 +17,8 @@ class ShrimpiaEssentials : JavaPlugin() {
     override fun onEnable() {
         saveDefaultConfig()
         instance = this
+
+        registerKernelCommands()
         LanguageManager.initialize(this)
 
         // フック登録
@@ -28,6 +33,7 @@ class ShrimpiaEssentials : JavaPlugin() {
             HomeModule(),
             HatModule(),
             ChatMentionNotifierModule(),
+            MisskeyChatSyncModule(),
         )
 
         // コマンド登録
@@ -80,6 +86,25 @@ class ShrimpiaEssentials : JavaPlugin() {
     fun unregisterHook(hook: HookBase) {
         hooks.remove(hook)
         hook.onDisable()
+    }
+
+    @Suppress("UnstableApiUsage")
+    private fun registerKernelCommands() {
+        lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { commands ->
+            commands.registrar().register(
+                Commands.literal("shrimpia")
+                    .then(
+                        Commands.literal("reload")
+                            .requires { it.sender.hasPermission("shrimpiaEssentials.adminCommands") }
+                            .executes {
+                                reloadConfig()
+                                it.source.sender.sendMessage("<green>Config reloaded!".asMiniMessage())
+                                1
+                            }
+                    )
+                    .build()
+            )
+        }
     }
 
     companion object {

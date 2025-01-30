@@ -1,7 +1,6 @@
 package network.shrimpia.essentials.modules
 
 import io.papermc.paper.event.player.AsyncChatEvent
-import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import org.bukkit.SoundCategory
 import org.bukkit.event.EventHandler
