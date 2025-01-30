@@ -1,5 +1,6 @@
 package network.shrimpia.essentials.util
 
+import network.shrimpia.essentials.services.MisskeyStreaming
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -9,7 +10,7 @@ import org.json.simple.JSONValue
 
 object MisskeyApi {
     // TODO: ハードコードされたURLを設定可能に
-    private const val URL = "https://mk.shrimpia.network"
+    private const val HOST = "mk.shrimpia.network"
     private val cli = OkHttpClient()
 
     fun createNoteOnChannel(text: String, channelId: String, token: String): JSONObject {
@@ -28,12 +29,18 @@ object MisskeyApi {
         val bodyData = JSONValue.toJSONString(bodyWithToken)
 
         val req = Request.Builder()
-            .url("$URL/api/$endpoint")
+            .url("https://$HOST/api/$endpoint")
             .method("POST", bodyData.toRequestBody("application/json".toMediaType()))
             .build()
 
         cli.newCall(req).execute().use { res ->
             return JSONValue.parse(res.body?.string()) as JSONObject
         }
+    }
+
+    fun connectStreaming(token: String): MisskeyStreaming {
+        val streaming = MisskeyStreaming("wss://$HOST", token)
+        streaming.connect()
+        return streaming
     }
 }

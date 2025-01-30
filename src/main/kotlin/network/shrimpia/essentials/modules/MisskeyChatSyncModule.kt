@@ -2,8 +2,13 @@ package network.shrimpia.essentials.modules
 
 import io.papermc.paper.event.player.AsyncChatEvent
 import net.kyori.adventure.text.TranslatableComponent
+import net.kyori.adventure.text.minimessage.MiniMessage
+import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 import network.shrimpia.essentials.ShrimpiaEssentials
+import network.shrimpia.essentials.models.MisskeyStreamingChannel
+import network.shrimpia.essentials.services.MisskeyStreaming
+import network.shrimpia.essentials.util.AdventureExtension.asMiniMessage
 import network.shrimpia.essentials.util.LanguageManager
 import network.shrimpia.essentials.util.MisskeyApi
 import org.bukkit.event.EventHandler
@@ -13,15 +18,23 @@ import org.bukkit.event.entity.PlayerDeathEvent
 import org.bukkit.event.player.PlayerAdvancementDoneEvent
 import org.bukkit.event.player.PlayerJoinEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.json.simple.JSONObject
+import java.util.UUID
 
 class MisskeyChatSyncModule : ModuleBase(), Listener {
     private var misskeyToken: String = ""
     private var misskeyChannelId: String = ""
+    private var streaming: MisskeyStreaming? = null
+    private var streamingChannelId = ""
 
     private val plugin by lazy { ShrimpiaEssentials.get() }
 
     override fun onEnable() {
         onReloadConfig()
+    }
+
+    override fun onDisable() {
+        disconnect()
     }
 
     override fun onReloadConfig() {
@@ -35,16 +48,17 @@ class MisskeyChatSyncModule : ModuleBase(), Listener {
 
         try {
             val meta = MisskeyApi.getMeta(misskeyToken)
-            plugin.logger.info("MisskeyChatSyncModule: Connected to Misskey server: ${meta["name"]} ${meta["version"]}")
+            initializeStreaming()
+            plugin.logger.info("MisskeyChatSyncModule: Misskeyサーバーに接続しました: ${meta["name"]} ${meta["version"]}")
         } catch (e: Exception) {
-            plugin.logger.warning("MisskeyChatSyncModule: Failed to connect to Misskey server")
+            plugin.logger.warning("MisskeyChatSyncModule: Misskeyサーバーへの接続に失敗しました。")
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     fun onChat(event: AsyncChatEvent) {
         val message = PlainTextComponentSerializer.plainText().serialize(event.message())
-        val formatted = "**${event.player.name}**\n$message"
+        val formatted = "**${event.player.name}:** $message"
         postMessage(formatted)
     }
 
@@ -82,7 +96,44 @@ class MisskeyChatSyncModule : ModuleBase(), Listener {
         try {
             MisskeyApi.createNoteOnChannel(message, misskeyChannelId, misskeyToken)
         } catch (e: Exception) {
-            plugin.logger.warning("MisskeyChatSyncModule: Failed to post message to Misskey server")
+            plugin.logger.warning("MisskeyChatSyncModule: サーバーにメッセージを投稿できませんでした: ${e.message}")
         }
+    }
+
+    private fun initializeStreaming() {
+        disconnect()
+
+        streamingChannelId = UUID.randomUUID().toString()
+        streaming = MisskeyApi.connectStreaming(misskeyToken)
+        streaming?.subscribeChannel(MisskeyStreamingChannel(
+            "channel",
+            streamingChannelId,
+            mapOf(
+                "channelId" to misskeyChannelId
+            )
+        ))
+        streaming?.onChannelMessage = ev@{ id, body ->
+            if (id != streamingChannelId || body["type"] != "note") return@ev
+            val note = body["body"] as JSONObject
+            val user = note["user"] as JSONObject
+            plugin.logger.info(user["isBot"].toString())
+            plugin.logger.info(user["isBot"]?.javaClass?.simpleName ?: "null")
+            plugin.logger.info(if (user["isBot"] == true) "true" else "false")
+            if (user["isBot"] == true) return@ev
+            if (note["text"] !is String || note["text"] == "") return@ev
+            val formatted = MiniMessage.miniMessage().deserialize(
+                "<gray><username>: <white><message>",
+                Placeholder.unparsed("username", "@${user["username"]}"),
+                Placeholder.unparsed("message", note["text"] as String)
+            )
+            plugin.server.broadcast(formatted)
+        }
+    }
+
+    private fun disconnect() {
+        if (streaming == null) return
+        plugin.logger.info("MisskeyChatSyncModule: ストリーミングを切断しています…")
+        streaming?.disconnect()
+        streaming = null
     }
 }
