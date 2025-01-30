@@ -20,6 +20,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.21.4-R0.1-SNAPSHOT")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.jeff-media:MorePersistentDataTypes:2.4.0")
 }
 
 val targetJavaVersion = 21
@@ -40,7 +41,7 @@ tasks.processResources {
     val props = mapOf("version" to version)
     inputs.properties(props)
     filteringCharset = "UTF-8"
-    filesMatching("paper-plugin.yml") {
+    filesMatching("plugin.yml") {
         expand(props)
     }
 }

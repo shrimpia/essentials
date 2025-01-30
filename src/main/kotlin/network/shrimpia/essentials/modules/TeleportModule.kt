@@ -4,6 +4,8 @@ import io.papermc.paper.command.brigadier.Commands
 import io.papermc.paper.plugin.lifecycle.event.registrar.ReloadableRegistrarEvent
 import net.kyori.adventure.text.Component
 import network.shrimpia.essentials.ShrimpiaEssentials
+import network.shrimpia.essentials.util.AdventureExtension.asMiniMessage
+import network.shrimpia.essentials.util.HomeUtility
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.NamespacedKey
@@ -21,6 +23,8 @@ class TeleportModule : ModuleBase(), Listener {
 
     @Suppress("UnstableApiUsage")
     override fun onRegisterCommand(commands: ReloadableRegistrarEvent<Commands>) {
+        val reg = commands.registrar()
+
         // リスポーン地点にテレポートする
         val spawnCommand =
             Commands.literal("spawn")
@@ -42,7 +46,7 @@ class TeleportModule : ModuleBase(), Listener {
                         val player = it.source.sender as Player
                         val bedLocation = player.respawnLocation
                         if (bedLocation == null) {
-                            player.sendMessage(Component.text("ベッドあるいはリスポーンアンカーが設定されていません"))
+                            player.sendMessage("<red>ベッドあるいはリスポーンアンカーが設定されていません".asMiniMessage())
                             return@executes 1
                         }
                         teleportAsync(player, bedLocation, 5 * 20)
@@ -56,7 +60,7 @@ class TeleportModule : ModuleBase(), Listener {
                     .executes {
                         val player = it.source.sender as Player
                         if (player.world.name == "world") {
-                            player.sendMessage(Component.text("既にメインワールドにいます"))
+                            player.sendMessage("<red>既にメインワールドにいます！".asMiniMessage())
                             return@executes 1
                         }
                         val location = getSavedLastMainWorldLocation(player)
@@ -72,7 +76,7 @@ class TeleportModule : ModuleBase(), Listener {
                     .executes {
                         val player = it.source.sender as Player
                         if (player.world.name.startsWith("sub")) {
-                            player.sendMessage(Component.text("既にサブワールドにいます"))
+                            player.sendMessage("<red>既にサブワールドにいます！".asMiniMessage())
                             return@executes 1
                         }
                         setLastMainWorldLocation(player, player.location)
@@ -80,10 +84,24 @@ class TeleportModule : ModuleBase(), Listener {
                         teleportAsync(player, world.spawnLocation)
                         1
                     }
+            ).then(
+                // プレイヤーのホームにテレポートする
+                Commands.literal("home")
+                    .requires { it.sender is Player }
+                    .executes {
+                        val player = it.source.sender as Player
+                        val home = HomeUtility.getHome(player, "default")
+                        if (home == null) {
+                            player.sendMessage("<red>ホームが設定されていません！<yellow>/home <red>で、現在地をホームに設定し、いつでもここにテレポートできます。".asMiniMessage())
+                            return@executes 1
+                        }
+                        teleportAsync(player, home, 5 * 20)
+                        1
+                    }
             ).build()
 
-        commands.registrar().register(gotoCommand)
-        commands.registrar().register(spawnCommand)
+        reg.register(gotoCommand)
+        reg.register(spawnCommand)
     }
 
     /**
