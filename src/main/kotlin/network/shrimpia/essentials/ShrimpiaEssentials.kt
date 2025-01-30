@@ -26,6 +26,7 @@ class ShrimpiaEssentials : JavaPlugin() {
             TeleportModule(),
             GreetingModule(),
             HomeModule(),
+            HatModule(),
         )
 
         // コマンド登録
