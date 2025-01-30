@@ -106,9 +106,8 @@ class MisskeyStreaming(url: String, token: String) {
     }
 
     private fun processMessage(text: String) {
-        // TODO: イベントを処理する
         val json = JSONValue.parse(text) as JSONObject
-        when (val type = json["type"] as String) {
+        when (json["type"] as String) {
             "channel" -> {
                 val id = (json["body"] as JSONObject)["id"] as String
                 val body = json["body"] as JSONObject
