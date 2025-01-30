@@ -14,11 +14,11 @@ class ShrimpiaEssentials : JavaPlugin() {
     override fun onEnable() {
         saveDefaultConfig()
         instance = this
+        LanguageManager.initialize(this)
 
         // フック登録
         registerHookAll(
         )
-
 
         // モジュール登録
         registerModuleAll(
