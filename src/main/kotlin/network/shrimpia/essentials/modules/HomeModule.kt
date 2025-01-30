@@ -19,6 +19,10 @@ class HomeModule : ModuleBase() {
                 .requires { it.sender is Player }
                 .executes {
                     val player = it.source.sender as Player
+                    if (player.location.world.name != "world") {
+                        player.sendMessage("<red>ホームは、メインワールドでのみ設定できます！".asMiniMessage())
+                        return@executes 1
+                    }
                     if (HomeUtility.setHome(player, "default")) {
                         player.sendMessage("<green>ホームを設定しました！".asMiniMessage())
                     } else {
